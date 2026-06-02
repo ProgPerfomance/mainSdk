@@ -33,6 +33,22 @@ export type MainUser = {
   updatedAt: string;
 };
 
+export type MainSubscription = {
+  scope: "app" | "global";
+  appId: string;
+  app_id?: string;
+  appIds?: string[];
+  app_ids?: string[];
+  expiresAt?: string;
+  hasActiveSubscription: boolean;
+  benefitType?: "free_requests" | "request_discount";
+  benefit_type?: "free_requests" | "request_discount";
+  discountPercent?: number;
+  autoRenewEnabled?: boolean;
+  nextChargeAt?: string;
+  updatedAt?: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -47,6 +63,7 @@ export type MainTransaction = {
 export type MainUserProfile = MainUser & {
   transactions: MainTransaction[];
   referrals?: MainUser[];
+  subscriptions?: MainSubscription[];
 };
 
 export type MainAnalytics = {
@@ -103,6 +120,17 @@ export type UpdateMainUserInput = {
   avatarUrl?: string | null;
 };
 
+export type GrantMainSubscriptionInput = {
+  adminName: string;
+  days: number;
+  scope: "app" | "global";
+  appId?: string;
+  appIds?: string[];
+  benefitType: "free_requests" | "request_discount";
+  discountPercent?: number;
+  reason?: string;
+};
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -137,6 +165,20 @@ export declare class MainAdminSdk {
   deleteUser(
     userId: string,
   ): Promise<{ deleted: true; _id: string; transactionsDeleted: number }>;
+  grantUserSubscription(
+    userId: string,
+    input: GrantMainSubscriptionInput,
+  ): Promise<{ user: MainUserProfile; transaction?: MainTransaction }>;
+  clearUserSubscription(
+    userId: string,
+    input: {
+      adminName: string;
+      scope: "app" | "global";
+      appId?: string;
+      appIds?: string[];
+      reason?: string;
+    },
+  ): Promise<{ user: MainUserProfile; transaction?: MainTransaction }>;
   getAppVersionSettings(appId: string): Promise<AppVersionSettings>;
   updateAppVersionSettings(
     appId: string,

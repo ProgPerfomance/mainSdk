@@ -33,6 +33,22 @@ export type MainUser = {
   updatedAt: string;
 };
 
+export type MainSubscription = {
+  scope: "app" | "global";
+  appId: string;
+  app_id?: string;
+  appIds?: string[];
+  app_ids?: string[];
+  expiresAt?: string;
+  hasActiveSubscription: boolean;
+  benefitType?: "free_requests" | "request_discount";
+  benefit_type?: "free_requests" | "request_discount";
+  discountPercent?: number;
+  autoRenewEnabled?: boolean;
+  nextChargeAt?: string;
+  updatedAt?: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -47,6 +63,7 @@ export type MainTransaction = {
 export type MainUserProfile = MainUser & {
   transactions: MainTransaction[];
   referrals?: MainUser[];
+  subscriptions?: MainSubscription[];
 };
 
 export type MainAnalytics = {
@@ -101,6 +118,17 @@ export type UpdateMainUserInput = {
   email: string;
   phoneNumber?: string | null;
   avatarUrl?: string | null;
+};
+
+export type GrantMainSubscriptionInput = {
+  adminName: string;
+  days: number;
+  scope: "app" | "global";
+  appId?: string;
+  appIds?: string[];
+  benefitType: "free_requests" | "request_discount";
+  discountPercent?: number;
+  reason?: string;
 };
 
 export type CreateWishInput = {
@@ -185,6 +213,32 @@ export class MainAdminSdk {
     return this.request<{ deleted: true; _id: string; transactionsDeleted: number }>(
       `/admin/api/users/${encodeURIComponent(userId)}`,
       { method: "DELETE" },
+    );
+  }
+
+  grantUserSubscription(userId: string, input: GrantMainSubscriptionInput) {
+    return this.request<{ user: MainUserProfile; transaction?: MainTransaction }>(
+      `/admin/api/users/${encodeURIComponent(userId)}/subscription`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  clearUserSubscription(userId: string, input: {
+    adminName: string;
+    scope: "app" | "global";
+    appId?: string;
+    appIds?: string[];
+    reason?: string;
+  }) {
+    return this.request<{ user: MainUserProfile; transaction?: MainTransaction }>(
+      `/admin/api/users/${encodeURIComponent(userId)}/subscription`,
+      {
+        method: "DELETE",
+        body: JSON.stringify(input),
+      },
     );
   }
 

@@ -53,6 +53,20 @@ export class MainAdminSdk {
     });
   }
 
+  grantUserSubscription(userId, input) {
+    return this.request(`/admin/api/users/${encodeURIComponent(userId)}/subscription`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  clearUserSubscription(userId, input) {
+    return this.request(`/admin/api/users/${encodeURIComponent(userId)}/subscription`, {
+      method: "DELETE",
+      body: JSON.stringify(input),
+    });
+  }
+
   getAppVersionSettings(appId) {
     return this.request(
       `/admin/api/app/version?appId=${encodeURIComponent(appId)}`,
