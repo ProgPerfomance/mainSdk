@@ -14,9 +14,23 @@ export type MainApp = {
   platform: string;
   apiBaseUrl?: string | null;
   settings?: Record<string, unknown>;
+  tBankSettings?: MainTBankSettingsStatus;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
+};
+
+export type MainTBankSettingsStatus = {
+  enabled: boolean;
+  terminalKeyConfigured: boolean;
+  passwordConfigured: boolean;
+  configured: boolean;
+  updatedAt?: string | null;
+};
+
+export type MainTBankSettingsReveal = MainTBankSettingsStatus & {
+  terminalKey?: string | null;
+  password?: string | null;
 };
 
 export type MainUser = {
@@ -170,6 +184,14 @@ export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
 };
 
+export type UpdateMainTBankSettingsInput = {
+  enabled?: boolean;
+  terminalKey?: string;
+  password?: string;
+  clearTerminalKey?: boolean;
+  clearPassword?: boolean;
+};
+
 export type UpdateMainUserInput = {
   name: string;
   email: string;
@@ -277,6 +299,26 @@ export class MainAdminSdk {
       method: "PUT",
       body: JSON.stringify(input),
     });
+  }
+
+  updateAppTBankSettings(appId: string, input: UpdateMainTBankSettingsInput) {
+    return this.request<MainApp>(
+      `/admin/api/apps/${encodeURIComponent(appId)}/tbank`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  revealAppTBankSettings(appId: string, password: string) {
+    return this.request<MainTBankSettingsReveal>(
+      `/admin/api/apps/${encodeURIComponent(appId)}/tbank/reveal`,
+      {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      },
+    );
   }
 
   listUsers(query?: string) {

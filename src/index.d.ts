@@ -14,9 +14,23 @@ export type MainApp = {
   platform: string;
   apiBaseUrl?: string | null;
   settings?: Record<string, unknown>;
+  tBankSettings?: MainTBankSettingsStatus;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
+};
+
+export type MainTBankSettingsStatus = {
+  enabled: boolean;
+  terminalKeyConfigured: boolean;
+  passwordConfigured: boolean;
+  configured: boolean;
+  updatedAt?: string | null;
+};
+
+export type MainTBankSettingsReveal = MainTBankSettingsStatus & {
+  terminalKey?: string | null;
+  password?: string | null;
 };
 
 export type MainUser = {
@@ -170,6 +184,14 @@ export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
 };
 
+export type UpdateMainTBankSettingsInput = {
+  enabled?: boolean;
+  terminalKey?: string;
+  password?: string;
+  clearTerminalKey?: boolean;
+  clearPassword?: boolean;
+};
+
 export type UpdateMainUserInput = {
   name: string;
   email: string;
@@ -250,6 +272,14 @@ export declare class MainAdminSdk {
   listApps(): Promise<MainApp[]>;
   createApp(input: CreateMainAppInput): Promise<MainApp>;
   updateApp(appId: string, input: UpdateMainAppInput): Promise<MainApp>;
+  updateAppTBankSettings(
+    appId: string,
+    input: UpdateMainTBankSettingsInput,
+  ): Promise<MainApp>;
+  revealAppTBankSettings(
+    appId: string,
+    password: string,
+  ): Promise<MainTBankSettingsReveal>;
   listUsers(query?: string): Promise<MainUser[]>;
   getUserProfile(userId: string): Promise<MainUserProfile>;
   updateUser(userId: string, input: UpdateMainUserInput): Promise<MainUserProfile>;

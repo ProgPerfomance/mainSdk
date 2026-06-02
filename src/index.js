@@ -31,6 +31,20 @@ export class MainAdminSdk {
     });
   }
 
+  updateAppTBankSettings(appId, input) {
+    return this.request(`/admin/api/apps/${encodeURIComponent(appId)}/tbank`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  revealAppTBankSettings(appId, password) {
+    return this.request(`/admin/api/apps/${encodeURIComponent(appId)}/tbank/reveal`, {
+      method: "POST",
+      body: JSON.stringify({ password }),
+    });
+  }
+
   listUsers(query) {
     const search = query ? `?q=${encodeURIComponent(query)}` : "";
     return this.request(`/admin/api/users${search}`);
