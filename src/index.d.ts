@@ -92,6 +92,20 @@ export type MainPromoCode = {
   updatedAt: string;
 };
 
+export type MainRequestPackage = {
+  _id: string;
+  requestCount: number;
+  price: number;
+  appId: string;
+  app_id?: string;
+  appIds?: string[];
+  app_ids?: string[];
+  scope: "app" | "global";
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -196,6 +210,18 @@ export type UpdateMainPromoCodeInput = Partial<CreateMainPromoCodeInput> & {
   isActive?: boolean;
 };
 
+export type CreateMainRequestPackageInput = {
+  requestCount: number;
+  price: number;
+  scope: "app" | "global";
+  appIds?: string[];
+  appId?: string;
+  isActive?: boolean;
+};
+
+export type UpdateMainRequestPackageInput =
+  Partial<CreateMainRequestPackageInput>;
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -246,6 +272,15 @@ export declare class MainAdminSdk {
     input: UpdateMainPromoCodeInput,
   ): Promise<MainPromoCode>;
   deletePromoCode(promoCodeId: string): Promise<{ deleted: true; _id: string }>;
+  listRequestPackages(): Promise<MainRequestPackage[]>;
+  createRequestPackage(
+    input: CreateMainRequestPackageInput,
+  ): Promise<MainRequestPackage>;
+  updateRequestPackage(
+    packageId: string,
+    input: UpdateMainRequestPackageInput,
+  ): Promise<MainRequestPackage>;
+  deleteRequestPackage(packageId: string): Promise<{ deleted: true }>;
   grantUserSubscription(
     userId: string,
     input: GrantMainSubscriptionInput,

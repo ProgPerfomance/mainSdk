@@ -102,6 +102,30 @@ export class MainAdminSdk {
     });
   }
 
+  listRequestPackages() {
+    return this.request("/admin/api/billing/request-packages");
+  }
+
+  createRequestPackage(input) {
+    return this.request("/admin/api/billing/request-packages", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateRequestPackage(packageId, input) {
+    return this.request(`/admin/api/billing/request-packages/${encodeURIComponent(packageId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteRequestPackage(packageId) {
+    return this.request(`/admin/api/billing/request-packages/${encodeURIComponent(packageId)}`, {
+      method: "DELETE",
+    });
+  }
+
   grantUserSubscription(userId, input) {
     return this.request(`/admin/api/users/${encodeURIComponent(userId)}/subscription`, {
       method: "PUT",

@@ -92,6 +92,20 @@ export type MainPromoCode = {
   updatedAt: string;
 };
 
+export type MainRequestPackage = {
+  _id: string;
+  requestCount: number;
+  price: number;
+  appId: string;
+  app_id?: string;
+  appIds?: string[];
+  app_ids?: string[];
+  scope: "app" | "global";
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -195,6 +209,18 @@ export type CreateMainPromoCodeInput = {
 export type UpdateMainPromoCodeInput = Partial<CreateMainPromoCodeInput> & {
   isActive?: boolean;
 };
+
+export type CreateMainRequestPackageInput = {
+  requestCount: number;
+  price: number;
+  scope: "app" | "global";
+  appIds?: string[];
+  appId?: string;
+  isActive?: boolean;
+};
+
+export type UpdateMainRequestPackageInput =
+  Partial<CreateMainRequestPackageInput>;
 
 export type CreateWishInput = {
   appId: string;
@@ -334,6 +360,34 @@ export class MainAdminSdk {
   deletePromoCode(promoCodeId: string) {
     return this.request<{ deleted: true; _id: string }>(
       `/admin/api/promo-codes/${encodeURIComponent(promoCodeId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listRequestPackages() {
+    return this.request<MainRequestPackage[]>("/admin/api/billing/request-packages");
+  }
+
+  createRequestPackage(input: CreateMainRequestPackageInput) {
+    return this.request<MainRequestPackage>("/admin/api/billing/request-packages", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateRequestPackage(packageId: string, input: UpdateMainRequestPackageInput) {
+    return this.request<MainRequestPackage>(
+      `/admin/api/billing/request-packages/${encodeURIComponent(packageId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteRequestPackage(packageId: string) {
+    return this.request<{ deleted: true }>(
+      `/admin/api/billing/request-packages/${encodeURIComponent(packageId)}`,
       { method: "DELETE" },
     );
   }
