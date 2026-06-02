@@ -53,6 +53,30 @@ export class MainAdminSdk {
     });
   }
 
+  listSubscriptionPlans() {
+    return this.request("/admin/api/subscriptions");
+  }
+
+  createSubscriptionPlan(input) {
+    return this.request("/admin/api/subscriptions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateSubscriptionPlan(planId, input) {
+    return this.request(`/admin/api/subscriptions/${encodeURIComponent(planId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteSubscriptionPlan(planId) {
+    return this.request(`/admin/api/subscriptions/${encodeURIComponent(planId)}`, {
+      method: "DELETE",
+    });
+  }
+
   grantUserSubscription(userId, input) {
     return this.request(`/admin/api/users/${encodeURIComponent(userId)}/subscription`, {
       method: "PUT",

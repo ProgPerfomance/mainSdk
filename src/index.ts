@@ -34,6 +34,10 @@ export type MainUser = {
 };
 
 export type MainSubscription = {
+  subscriptionId?: string;
+  subscription_id?: string;
+  subscriptionName?: string;
+  subscription_name?: string;
   scope: "app" | "global";
   appId: string;
   app_id?: string;
@@ -47,6 +51,21 @@ export type MainSubscription = {
   autoRenewEnabled?: boolean;
   nextChargeAt?: string;
   updatedAt?: string;
+};
+
+export type MainSubscriptionPlan = {
+  _id: string;
+  name: string;
+  scope: "app" | "global";
+  appIds: string[];
+  app_ids?: string[];
+  benefitType: "free_requests" | "request_discount";
+  benefit_type?: "free_requests" | "request_discount";
+  discountPercent?: number;
+  price: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type MainTransaction = {
@@ -122,14 +141,23 @@ export type UpdateMainUserInput = {
 
 export type GrantMainSubscriptionInput = {
   adminName: string;
+  subscriptionId: string;
   days: number;
-  scope: "app" | "global";
-  appId?: string;
-  appIds?: string[];
-  benefitType: "free_requests" | "request_discount";
-  discountPercent?: number;
   reason?: string;
 };
+
+export type CreateMainSubscriptionPlanInput = {
+  name: string;
+  scope: "app" | "global";
+  appIds: string[];
+  benefitType: "free_requests" | "request_discount";
+  discountPercent?: number;
+  price: number;
+  isActive?: boolean;
+};
+
+export type UpdateMainSubscriptionPlanInput =
+  Partial<CreateMainSubscriptionPlanInput>;
 
 export type CreateWishInput = {
   appId: string;
@@ -216,6 +244,34 @@ export class MainAdminSdk {
     );
   }
 
+  listSubscriptionPlans() {
+    return this.request<MainSubscriptionPlan[]>("/admin/api/subscriptions");
+  }
+
+  createSubscriptionPlan(input: CreateMainSubscriptionPlanInput) {
+    return this.request<MainSubscriptionPlan>("/admin/api/subscriptions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateSubscriptionPlan(planId: string, input: UpdateMainSubscriptionPlanInput) {
+    return this.request<MainSubscriptionPlan>(
+      `/admin/api/subscriptions/${encodeURIComponent(planId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteSubscriptionPlan(planId: string) {
+    return this.request<{ deleted: true; _id: string }>(
+      `/admin/api/subscriptions/${encodeURIComponent(planId)}`,
+      { method: "DELETE" },
+    );
+  }
+
   grantUserSubscription(userId: string, input: GrantMainSubscriptionInput) {
     return this.request<{ user: MainUserProfile; transaction?: MainTransaction }>(
       `/admin/api/users/${encodeURIComponent(userId)}/subscription`,
@@ -228,9 +284,7 @@ export class MainAdminSdk {
 
   clearUserSubscription(userId: string, input: {
     adminName: string;
-    scope: "app" | "global";
-    appId?: string;
-    appIds?: string[];
+    subscriptionId: string;
     reason?: string;
   }) {
     return this.request<{ user: MainUserProfile; transaction?: MainTransaction }>(

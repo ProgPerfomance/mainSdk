@@ -34,6 +34,10 @@ export type MainUser = {
 };
 
 export type MainSubscription = {
+  subscriptionId?: string;
+  subscription_id?: string;
+  subscriptionName?: string;
+  subscription_name?: string;
   scope: "app" | "global";
   appId: string;
   app_id?: string;
@@ -47,6 +51,21 @@ export type MainSubscription = {
   autoRenewEnabled?: boolean;
   nextChargeAt?: string;
   updatedAt?: string;
+};
+
+export type MainSubscriptionPlan = {
+  _id: string;
+  name: string;
+  scope: "app" | "global";
+  appIds: string[];
+  app_ids?: string[];
+  benefitType: "free_requests" | "request_discount";
+  benefit_type?: "free_requests" | "request_discount";
+  discountPercent?: number;
+  price: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type MainTransaction = {
@@ -122,14 +141,23 @@ export type UpdateMainUserInput = {
 
 export type GrantMainSubscriptionInput = {
   adminName: string;
+  subscriptionId: string;
   days: number;
-  scope: "app" | "global";
-  appId?: string;
-  appIds?: string[];
-  benefitType: "free_requests" | "request_discount";
-  discountPercent?: number;
   reason?: string;
 };
+
+export type CreateMainSubscriptionPlanInput = {
+  name: string;
+  scope: "app" | "global";
+  appIds: string[];
+  benefitType: "free_requests" | "request_discount";
+  discountPercent?: number;
+  price: number;
+  isActive?: boolean;
+};
+
+export type UpdateMainSubscriptionPlanInput =
+  Partial<CreateMainSubscriptionPlanInput>;
 
 export type CreateWishInput = {
   appId: string;
@@ -165,6 +193,15 @@ export declare class MainAdminSdk {
   deleteUser(
     userId: string,
   ): Promise<{ deleted: true; _id: string; transactionsDeleted: number }>;
+  listSubscriptionPlans(): Promise<MainSubscriptionPlan[]>;
+  createSubscriptionPlan(
+    input: CreateMainSubscriptionPlanInput,
+  ): Promise<MainSubscriptionPlan>;
+  updateSubscriptionPlan(
+    planId: string,
+    input: UpdateMainSubscriptionPlanInput,
+  ): Promise<MainSubscriptionPlan>;
+  deleteSubscriptionPlan(planId: string): Promise<{ deleted: true; _id: string }>;
   grantUserSubscription(
     userId: string,
     input: GrantMainSubscriptionInput,
@@ -173,9 +210,7 @@ export declare class MainAdminSdk {
     userId: string,
     input: {
       adminName: string;
-      scope: "app" | "global";
-      appId?: string;
-      appIds?: string[];
+      subscriptionId: string;
       reason?: string;
     },
   ): Promise<{ user: MainUserProfile; transaction?: MainTransaction }>;
