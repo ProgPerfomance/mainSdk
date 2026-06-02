@@ -24,12 +24,29 @@ export type MainUser = {
   name: string;
   email: string;
   phoneNumber?: string | null;
+  avatarUrl?: string | null;
   balance: number;
   requestBalance?: number;
   referralCode?: string | null;
   referralsCount?: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type MainTransaction = {
+  _id: string;
+  userId: string;
+  userName?: string | null;
+  amount: number;
+  type: "deposit" | "withdrawal" | "payment";
+  description?: string | null;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type MainUserProfile = MainUser & {
+  transactions: MainTransaction[];
+  referrals?: MainUser[];
 };
 
 export type MainAnalytics = {
@@ -79,6 +96,13 @@ export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
 };
 
+export type UpdateMainUserInput = {
+  name: string;
+  email: string;
+  phoneNumber?: string | null;
+  avatarUrl?: string | null;
+};
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -108,6 +132,11 @@ export declare class MainAdminSdk {
   createApp(input: CreateMainAppInput): Promise<MainApp>;
   updateApp(appId: string, input: UpdateMainAppInput): Promise<MainApp>;
   listUsers(query?: string): Promise<MainUser[]>;
+  getUserProfile(userId: string): Promise<MainUserProfile>;
+  updateUser(userId: string, input: UpdateMainUserInput): Promise<MainUserProfile>;
+  deleteUser(
+    userId: string,
+  ): Promise<{ deleted: true; _id: string; transactionsDeleted: number }>;
   getAppVersionSettings(appId: string): Promise<AppVersionSettings>;
   updateAppVersionSettings(
     appId: string,

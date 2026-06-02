@@ -36,6 +36,23 @@ export class MainAdminSdk {
     return this.request(`/admin/api/users${search}`);
   }
 
+  getUserProfile(userId) {
+    return this.request(`/admin/api/users/${encodeURIComponent(userId)}`);
+  }
+
+  updateUser(userId, input) {
+    return this.request(`/admin/api/users/${encodeURIComponent(userId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteUser(userId) {
+    return this.request(`/admin/api/users/${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+    });
+  }
+
   getAppVersionSettings(appId) {
     return this.request(
       `/admin/api/app/version?appId=${encodeURIComponent(appId)}`,

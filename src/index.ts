@@ -24,12 +24,29 @@ export type MainUser = {
   name: string;
   email: string;
   phoneNumber?: string | null;
+  avatarUrl?: string | null;
   balance: number;
   requestBalance?: number;
   referralCode?: string | null;
   referralsCount?: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type MainTransaction = {
+  _id: string;
+  userId: string;
+  userName?: string | null;
+  amount: number;
+  type: "deposit" | "withdrawal" | "payment";
+  description?: string | null;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type MainUserProfile = MainUser & {
+  transactions: MainTransaction[];
+  referrals?: MainUser[];
 };
 
 export type MainAnalytics = {
@@ -77,6 +94,13 @@ export type CreateMainAppInput = {
 
 export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
+};
+
+export type UpdateMainUserInput = {
+  name: string;
+  email: string;
+  phoneNumber?: string | null;
+  avatarUrl?: string | null;
 };
 
 export type CreateWishInput = {
@@ -139,6 +163,29 @@ export class MainAdminSdk {
   listUsers(query?: string) {
     const search = query ? `?q=${encodeURIComponent(query)}` : "";
     return this.request<MainUser[]>(`/admin/api/users${search}`);
+  }
+
+  getUserProfile(userId: string) {
+    return this.request<MainUserProfile>(
+      `/admin/api/users/${encodeURIComponent(userId)}`,
+    );
+  }
+
+  updateUser(userId: string, input: UpdateMainUserInput) {
+    return this.request<MainUserProfile>(
+      `/admin/api/users/${encodeURIComponent(userId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteUser(userId: string) {
+    return this.request<{ deleted: true; _id: string; transactionsDeleted: number }>(
+      `/admin/api/users/${encodeURIComponent(userId)}`,
+      { method: "DELETE" },
+    );
   }
 
   getAppVersionSettings(appId: string) {
