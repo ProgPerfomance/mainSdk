@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 
 import 'models/auth_session.dart';
+import 'models/app_version_settings.dart';
 import 'models/selekt_api_exception.dart';
 import 'models/selekt_user.dart';
+import 'models/wish.dart';
+import 'models/wish_request.dart';
 import 'selekt_sdk_config.dart';
 import 'selekt_session_store.dart';
 
@@ -134,6 +137,42 @@ class SelektSdk {
     await _sessionStore?.clearSession();
   }
 
+  Future<AppVersionSettings> getAppVersionSettings() async {
+    final data = await _get('/api/v1/app/version');
+    return AppVersionSettings.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<List<Wish>> listWishes() async {
+    final data = await _get('/api/v1/wishes');
+    return List<Map<String, dynamic>>.from(
+      (data as List).map((item) => Map<String, dynamic>.from(item as Map)),
+    ).map(Wish.fromJson).toList();
+  }
+
+  Future<Wish> reactToWish({
+    required String wishId,
+    required WishReactionType reaction,
+    WishReactionType? previousReaction,
+  }) async {
+    final data = await _post('/api/v1/wishes/$wishId/reaction', {
+      'reaction': reaction.apiValue,
+      if (previousReaction != null)
+        'previousReaction': previousReaction.apiValue,
+    });
+    return Wish.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<WishRequest> createWishRequest({
+    required String text,
+    String? userId,
+  }) async {
+    final data = await _post('/api/v1/wishes/requests', {
+      'text': text,
+      if (userId != null && userId.trim().isNotEmpty) 'userId': userId,
+    });
+    return WishRequest.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
   Future<AuthSession> _postAuthSession(
     String path,
     Map<String, dynamic> data,
@@ -150,6 +189,28 @@ class SelektSdk {
           ...data,
           'appId': _config.normalizedAppId,
           'app_id': _config.normalizedAppId,
+        },
+      );
+      return response.data['data'];
+    } on DioException catch (error) {
+      throw SelektApiException.fromResponse(
+        responseData: error.response?.data,
+        fallbackMessage: error.message,
+        statusCode: error.response?.statusCode,
+      );
+    }
+  }
+
+  Future<dynamic> _get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.get(
+        path,
+        queryParameters: {
+          if (queryParameters != null) ...queryParameters,
+          'appId': _config.normalizedAppId,
         },
       );
       return response.data['data'];

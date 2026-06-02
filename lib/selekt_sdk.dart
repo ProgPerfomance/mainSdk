@@ -2,5 +2,8 @@ export 'src/selekt_sdk.dart';
 export 'src/selekt_sdk_config.dart';
 export 'src/selekt_session_store.dart';
 export 'src/models/auth_session.dart';
+export 'src/models/app_version_settings.dart';
 export 'src/models/selekt_user.dart';
 export 'src/models/selekt_api_exception.dart';
+export 'src/models/wish.dart';
+export 'src/models/wish_request.dart';

@@ -40,6 +40,33 @@ export type MainAnalytics = {
   totalRequestBalance: number;
 };
 
+export type AppVersionSettings = {
+  requiredVersion: string;
+  updatedAt: string;
+};
+
+export type Wish = {
+  _id: string;
+  requestId?: string | null;
+  appId?: string;
+  app_id?: string;
+  text: string;
+  likeCount: number;
+  dislikeCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WishRequest = {
+  _id: string;
+  appId?: string;
+  app_id?: string;
+  userId?: string;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CreateMainAppInput = {
   appId: string;
   name: string;
@@ -50,6 +77,18 @@ export type CreateMainAppInput = {
 
 export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
+};
+
+export type CreateWishInput = {
+  appId: string;
+  text: string;
+  requestId?: string | null;
+};
+
+export type UpdateWishInput = {
+  appId: string;
+  text: string;
+  requestId?: string | null;
 };
 
 export type MainSdkConfig = {
@@ -69,5 +108,23 @@ export declare class MainAdminSdk {
   createApp(input: CreateMainAppInput): Promise<MainApp>;
   updateApp(appId: string, input: UpdateMainAppInput): Promise<MainApp>;
   listUsers(query?: string): Promise<MainUser[]>;
+  getAppVersionSettings(appId: string): Promise<AppVersionSettings>;
+  updateAppVersionSettings(
+    appId: string,
+    requiredVersion: string,
+  ): Promise<AppVersionSettings>;
+  listWishes(appId: string): Promise<Wish[]>;
+  createWish(input: CreateWishInput): Promise<Wish>;
+  updateWish(wishId: string, input: UpdateWishInput): Promise<Wish>;
+  deleteWish(
+    appId: string,
+    wishId: string,
+  ): Promise<{ deleted: true; _id: string }>;
+  listWishRequests(appId: string): Promise<WishRequest[]>;
+  deleteWishRequest(
+    appId: string,
+    requestId: string,
+  ): Promise<{ deleted: true; _id: string }>;
+  clearWishRequests(appId: string): Promise<{ deleted: number }>;
   getAnalytics(): Promise<MainAnalytics>;
 }

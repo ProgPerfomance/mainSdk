@@ -40,6 +40,33 @@ export type MainAnalytics = {
   totalRequestBalance: number;
 };
 
+export type AppVersionSettings = {
+  requiredVersion: string;
+  updatedAt: string;
+};
+
+export type Wish = {
+  _id: string;
+  requestId?: string | null;
+  appId?: string;
+  app_id?: string;
+  text: string;
+  likeCount: number;
+  dislikeCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WishRequest = {
+  _id: string;
+  appId?: string;
+  app_id?: string;
+  userId?: string;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CreateMainAppInput = {
   appId: string;
   name: string;
@@ -50,6 +77,18 @@ export type CreateMainAppInput = {
 
 export type UpdateMainAppInput = Partial<Omit<CreateMainAppInput, "appId">> & {
   isActive?: boolean;
+};
+
+export type CreateWishInput = {
+  appId: string;
+  text: string;
+  requestId?: string | null;
+};
+
+export type UpdateWishInput = {
+  appId: string;
+  text: string;
+  requestId?: string | null;
 };
 
 export type MainSdkConfig = {
@@ -100,6 +139,69 @@ export class MainAdminSdk {
   listUsers(query?: string) {
     const search = query ? `?q=${encodeURIComponent(query)}` : "";
     return this.request<MainUser[]>(`/admin/api/users${search}`);
+  }
+
+  getAppVersionSettings(appId: string) {
+    return this.request<AppVersionSettings>(
+      `/admin/api/app/version?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  updateAppVersionSettings(appId: string, requiredVersion: string) {
+    return this.request<AppVersionSettings>("/admin/api/app/version", {
+      method: "PUT",
+      body: JSON.stringify({ appId, requiredVersion }),
+    });
+  }
+
+  listWishes(appId: string) {
+    return this.request<Wish[]>(
+      `/admin/api/wishes?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  createWish(input: CreateWishInput) {
+    return this.request<Wish>("/admin/api/wishes", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateWish(wishId: string, input: UpdateWishInput) {
+    return this.request<Wish>(
+      `/admin/api/wishes/${encodeURIComponent(wishId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteWish(appId: string, wishId: string) {
+    return this.request<{ deleted: true; _id: string }>(
+      `/admin/api/wishes/${encodeURIComponent(wishId)}?appId=${encodeURIComponent(appId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listWishRequests(appId: string) {
+    return this.request<WishRequest[]>(
+      `/admin/api/wish-requests?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  deleteWishRequest(appId: string, requestId: string) {
+    return this.request<{ deleted: true; _id: string }>(
+      `/admin/api/wish-requests/${encodeURIComponent(requestId)}?appId=${encodeURIComponent(appId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  clearWishRequests(appId: string) {
+    return this.request<{ deleted: number }>(
+      `/admin/api/wish-requests?appId=${encodeURIComponent(appId)}`,
+      { method: "DELETE" },
+    );
   }
 
   async getAnalytics(): Promise<MainAnalytics> {

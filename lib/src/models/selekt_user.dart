@@ -37,7 +37,8 @@ class SelektUser {
 
   bool get hasActiveSubscription {
     final expiresAt = subscriptionExpiresAt;
-    return expiresAt != null && expiresAt.toUtc().isAfter(DateTime.now().toUtc());
+    return expiresAt != null &&
+        expiresAt.toUtc().isAfter(DateTime.now().toUtc());
   }
 
   factory SelektUser.fromJson(Map<String, dynamic> json) {
