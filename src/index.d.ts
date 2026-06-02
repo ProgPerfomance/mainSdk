@@ -68,6 +68,30 @@ export type MainSubscriptionPlan = {
   updatedAt: string;
 };
 
+export type MainPromoCodeRedemption = {
+  userId: string;
+  userName?: string | null;
+  userEmail?: string | null;
+  redeemedAt: string;
+};
+
+export type MainPromoCode = {
+  _id: string;
+  code: string;
+  appId: string;
+  app_id?: string;
+  campaign?: string | null;
+  amount: number;
+  isActive: boolean;
+  maxRedemptions?: number | null;
+  expiresAt?: string | null;
+  isExpired?: boolean;
+  redemptionsCount: number;
+  redemptions?: MainPromoCodeRedemption[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -159,6 +183,19 @@ export type CreateMainSubscriptionPlanInput = {
 export type UpdateMainSubscriptionPlanInput =
   Partial<CreateMainSubscriptionPlanInput>;
 
+export type CreateMainPromoCodeInput = {
+  code: string;
+  appId: string;
+  campaign?: string | null;
+  amount: number;
+  maxRedemptions?: number | null;
+  expiresAt?: string | null;
+};
+
+export type UpdateMainPromoCodeInput = Partial<CreateMainPromoCodeInput> & {
+  isActive?: boolean;
+};
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -202,6 +239,13 @@ export declare class MainAdminSdk {
     input: UpdateMainSubscriptionPlanInput,
   ): Promise<MainSubscriptionPlan>;
   deleteSubscriptionPlan(planId: string): Promise<{ deleted: true; _id: string }>;
+  listPromoCodes(appId?: string): Promise<MainPromoCode[]>;
+  createPromoCode(input: CreateMainPromoCodeInput): Promise<MainPromoCode>;
+  updatePromoCode(
+    promoCodeId: string,
+    input: UpdateMainPromoCodeInput,
+  ): Promise<MainPromoCode>;
+  deletePromoCode(promoCodeId: string): Promise<{ deleted: true; _id: string }>;
   grantUserSubscription(
     userId: string,
     input: GrantMainSubscriptionInput,

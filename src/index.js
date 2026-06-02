@@ -77,6 +77,31 @@ export class MainAdminSdk {
     });
   }
 
+  listPromoCodes(appId) {
+    const search = appId ? `?appId=${encodeURIComponent(appId)}` : "";
+    return this.request(`/admin/api/promo-codes${search}`);
+  }
+
+  createPromoCode(input) {
+    return this.request("/admin/api/promo-codes", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updatePromoCode(promoCodeId, input) {
+    return this.request(`/admin/api/promo-codes/${encodeURIComponent(promoCodeId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  deletePromoCode(promoCodeId) {
+    return this.request(`/admin/api/promo-codes/${encodeURIComponent(promoCodeId)}`, {
+      method: "DELETE",
+    });
+  }
+
   grantUserSubscription(userId, input) {
     return this.request(`/admin/api/users/${encodeURIComponent(userId)}/subscription`, {
       method: "PUT",

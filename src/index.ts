@@ -68,6 +68,30 @@ export type MainSubscriptionPlan = {
   updatedAt: string;
 };
 
+export type MainPromoCodeRedemption = {
+  userId: string;
+  userName?: string | null;
+  userEmail?: string | null;
+  redeemedAt: string;
+};
+
+export type MainPromoCode = {
+  _id: string;
+  code: string;
+  appId: string;
+  app_id?: string;
+  campaign?: string | null;
+  amount: number;
+  isActive: boolean;
+  maxRedemptions?: number | null;
+  expiresAt?: string | null;
+  isExpired?: boolean;
+  redemptionsCount: number;
+  redemptions?: MainPromoCodeRedemption[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MainTransaction = {
   _id: string;
   userId: string;
@@ -158,6 +182,19 @@ export type CreateMainSubscriptionPlanInput = {
 
 export type UpdateMainSubscriptionPlanInput =
   Partial<CreateMainSubscriptionPlanInput>;
+
+export type CreateMainPromoCodeInput = {
+  code: string;
+  appId: string;
+  campaign?: string | null;
+  amount: number;
+  maxRedemptions?: number | null;
+  expiresAt?: string | null;
+};
+
+export type UpdateMainPromoCodeInput = Partial<CreateMainPromoCodeInput> & {
+  isActive?: boolean;
+};
 
 export type CreateWishInput = {
   appId: string;
@@ -268,6 +305,35 @@ export class MainAdminSdk {
   deleteSubscriptionPlan(planId: string) {
     return this.request<{ deleted: true; _id: string }>(
       `/admin/api/subscriptions/${encodeURIComponent(planId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listPromoCodes(appId?: string) {
+    const search = appId ? `?appId=${encodeURIComponent(appId)}` : "";
+    return this.request<MainPromoCode[]>(`/admin/api/promo-codes${search}`);
+  }
+
+  createPromoCode(input: CreateMainPromoCodeInput) {
+    return this.request<MainPromoCode>("/admin/api/promo-codes", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updatePromoCode(promoCodeId: string, input: UpdateMainPromoCodeInput) {
+    return this.request<MainPromoCode>(
+      `/admin/api/promo-codes/${encodeURIComponent(promoCodeId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deletePromoCode(promoCodeId: string) {
+    return this.request<{ deleted: true; _id: string }>(
+      `/admin/api/promo-codes/${encodeURIComponent(promoCodeId)}`,
       { method: "DELETE" },
     );
   }
