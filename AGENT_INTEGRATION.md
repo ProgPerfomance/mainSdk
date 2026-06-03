@@ -4,9 +4,9 @@ Use this guide when adding `main_sdk` to a new Flutter application.
 
 The SDK is the shared client for `mainApi`. It should replace app-local code for
 auth, profile, app version, wishes, shared billing, T-Bank, request packages,
-promo codes, subscriptions, and AI billing. Keep app-specific APIs only for
-app-specific content such as characters, doctors, chats, food analysis, or
-other domain data.
+promo codes, subscriptions, AI billing, and related-app blocks. Keep
+app-specific APIs only for app-specific content such as characters, doctors,
+chats, food analysis, or other domain data.
 
 ## Required Order
 
@@ -163,6 +163,23 @@ if (version.requiredVersion != currentVersionLabel) {
 }
 ```
 
+Related apps:
+
+```dart
+final relatedApps = await sdk.getRelatedApps();
+for (final block in relatedApps.blocks) {
+  if (block.isBanner) {
+    // Render a wide adaptive banner using this app's own design system.
+  }
+  if (block.isGrid) {
+    // Render a responsive app icon grid. Backend recommendation: 3 columns.
+  }
+}
+```
+
+Do not hardcode colors/layout inside SDK integration code. The SDK returns
+data and `block.type`; the app owns the visual implementation.
+
 Wishes:
 
 ```dart
@@ -262,6 +279,7 @@ Before saying the migration is done:
 - `flutter analyze` passes.
 - Login/register/profile restore work.
 - App version request returns app-specific settings.
+- Related-app blocks load and render without hardcoded foreign styling.
 - Wishes list/request/reaction work, if the app has wishes UI.
 - Balance history loads.
 - Packages load for the app.

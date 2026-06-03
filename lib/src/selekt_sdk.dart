@@ -4,6 +4,7 @@ import 'models/auth_session.dart';
 import 'models/app_version_settings.dart';
 import 'models/ai_billing.dart';
 import 'models/billing_history.dart';
+import 'models/related_apps.dart';
 import 'models/request_package.dart';
 import 'models/selekt_api_exception.dart';
 import 'models/selekt_user.dart';
@@ -372,6 +373,11 @@ class SelektSdk {
   Future<AppVersionSettings> getAppVersionSettings() async {
     final data = await _get('/api/v1/app/version');
     return AppVersionSettings.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<RelatedAppsFeed> getRelatedApps() async {
+    final data = await _get('/api/v1/app/other-apps');
+    return RelatedAppsFeed.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
   Future<List<Wish>> listWishes() async {

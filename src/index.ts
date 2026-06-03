@@ -11,6 +11,9 @@ export type MainApp = {
   appId: string;
   app_id?: string;
   name: string;
+  displayName?: string | null;
+  imageUrl?: string | null;
+  shortDescription?: string | null;
   platform: string;
   apiBaseUrl?: string | null;
   settings?: Record<string, unknown>;
@@ -175,6 +178,9 @@ export type WishRequest = {
 export type CreateMainAppInput = {
   appId: string;
   name: string;
+  displayName?: string;
+  imageUrl?: string;
+  shortDescription?: string;
   platform: string;
   apiBaseUrl?: string;
   settings?: Record<string, unknown>;

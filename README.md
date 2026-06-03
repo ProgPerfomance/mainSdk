@@ -30,6 +30,7 @@ Flutter/client SDK:
 - referral code application;
 - account deletion;
 - app version settings;
+- related apps blocks for cross-app promotion;
 - published wishes;
 - wish reactions;
 - user wish requests.
@@ -282,6 +283,27 @@ if (settings.requiredVersion != currentVersionLabel) {
 
 The backend receives the app id from `X-App-Id` and query parameters generated
 by the SDK.
+
+### Related Apps
+
+The SDK can load blocks with other active applications. The current app is
+excluded automatically by `appId`.
+
+```dart
+final feed = await sdk.getRelatedApps();
+
+for (final block in feed.blocks) {
+  if (block.isBanner) {
+    // Render one wide adaptive banner with icon, title, description.
+  }
+  if (block.isGrid) {
+    // Render icons in a grid. The backend currently recommends 3 columns.
+  }
+}
+```
+
+The SDK returns data only. Each app should render the banner/grid using its own
+colors, typography, radii, spacing, and navigation patterns.
 
 ### Wishes
 
