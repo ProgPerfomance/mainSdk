@@ -4,7 +4,7 @@ Shared SDK for Selekt/Niami applications.
 
 `main_sdk` is the common client layer for the shared `mainApi`. Each app keeps
 its own `appId`, but uses the same API for users, auth, profile, app version,
-wishes, and admin operations.
+wishes, billing catalog entities, and admin operations.
 
 Current production `mainApi`:
 
@@ -33,9 +33,14 @@ Flutter/client SDK:
 TypeScript/admin SDK:
 
 - app registry list/create/update;
+- encrypted T-Bank settings per app;
 - users list;
 - user profile with transactions;
 - user edit/delete;
+- user subscription grant/update;
+- subscription plans CRUD;
+- request packages CRUD;
+- promo codes CRUD;
 - app version read/update;
 - wishes CRUD;
 - wish requests list/delete/clear;
@@ -243,6 +248,26 @@ await sdk.updateApp("psychology", {
 });
 ```
 
+Each app may also have encrypted T-Bank settings. `listApps()` and
+`updateApp()` never return raw secrets; they only return status flags in
+`app.tBankSettings`.
+
+```ts
+await sdk.updateAppTBankSettings("psychology", {
+  enabled: true,
+  terminalKey: process.env.TBANK_TERMINAL_KEY,
+  password: process.env.TBANK_PASSWORD,
+});
+
+const revealed = await sdk.revealAppTBankSettings(
+  "psychology",
+  adminPassword,
+);
+```
+
+`revealAppTBankSettings()` requires the admin password. Use it only for admin
+UI reveal flows. Do not persist the returned raw values on the frontend.
+
 ### Users
 
 ```ts
@@ -259,6 +284,117 @@ await sdk.deleteUser(userId);
 ```
 
 `getUserProfile()` returns user data plus `transactions`.
+
+Manual subscription grant/update:
+
+```ts
+await sdk.grantUserSubscription(userId, {
+  adminName: "admin",
+  subscriptionId: planId,
+  days: 30,
+  reason: "Manual correction",
+});
+
+await sdk.clearUserSubscription(userId, {
+  scope: "app",
+  appId: "psychology",
+});
+```
+
+User entities include `balance`, optional `avatarUrl`, transactions, and
+subscription metadata.
+
+### Subscription Plans
+
+Subscriptions are global catalog entities. A user stores assigned
+subscriptions with expiration metadata; the plan itself is not owned by one
+user.
+
+```ts
+const plans = await sdk.listSubscriptionPlans();
+
+const plus = await sdk.createSubscriptionPlan({
+  name: "Plus",
+  scope: "global",
+  appIds: ["global"],
+  benefitType: "free_requests",
+  price: 499,
+  isActive: true,
+});
+
+await sdk.updateSubscriptionPlan(plus._id, {
+  price: 599,
+  isActive: true,
+});
+
+await sdk.deleteSubscriptionPlan(plus._id);
+```
+
+Scopes:
+
+- `global`: applies to every app.
+- `app`: applies only to selected `appIds`.
+
+Benefits:
+
+- `free_requests`: requests are free while the subscription is active.
+- `request_discount`: each request receives `discountPercent`.
+
+### Request Packages
+
+Request packages are global admin catalog entities for buying a fixed amount of
+requests.
+
+```ts
+const packages = await sdk.listRequestPackages();
+
+const packageItem = await sdk.createRequestPackage({
+  requestCount: 100,
+  price: 999,
+  scope: "app",
+  appIds: ["psychology"],
+  isActive: true,
+});
+
+await sdk.updateRequestPackage(packageItem._id, {
+  scope: "global",
+  appIds: ["global"],
+  price: 1199,
+});
+
+await sdk.deleteRequestPackage(packageItem._id);
+```
+
+Scope behavior:
+
+- `app`: visible for purchase only in the selected apps and grants requests for
+  the purchase app.
+- `global`: visible in all apps and grants global request balance.
+
+### Promo Codes
+
+Promo codes are managed globally through the admin SDK, but each code is scoped
+to an app.
+
+```ts
+const promoCodes = await sdk.listPromoCodes("psychology");
+
+const promo = await sdk.createPromoCode({
+  code: "START500",
+  appId: "psychology",
+  campaign: "Launch",
+  amount: 500,
+  maxRedemptions: 100,
+  expiresAt: "2026-12-31T23:59:59.000Z",
+});
+
+await sdk.updatePromoCode(promo._id, {
+  amount: 700,
+  isActive: true,
+});
+
+await sdk.deletePromoCode(promo._id);
+```
 
 ### App Version
 
@@ -302,9 +438,12 @@ Currently this aggregates app and user data client-side in the admin SDK.
 
 - `mainApi` is the single shared API for users and shared platform features.
 - `appId` separates data and settings between apps.
+- Payment provider credentials are configured per app in the admin UI and are
+  stored encrypted in Mongo. The old `.env` keys are only a fallback.
 - Mobile apps still may keep app-specific backends temporarily. For example,
   the psychology app still uses its old backend for psychology-specific catalog
-  data, but auth/profile/version/wishes are now shared.
+  data, but auth/profile/version/wishes and shared billing catalog settings are
+  now in `mainApi`.
 - Admin UI should call `mainSdk`, not the old psychology backend.
 
 ## Current Psychology App Values
