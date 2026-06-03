@@ -12,6 +12,10 @@ Current production `mainApi`:
 http://80.93.61.208:5195
 ```
 
+For agent-to-agent handoff and new app migrations, start with
+[`AGENT_INTEGRATION.md`](AGENT_INTEGRATION.md). A copyable Flutter example is in
+[`examples/flutter_integration.dart`](examples/flutter_integration.dart).
+
 ## What The SDK Owns
 
 Flutter/client SDK:
@@ -29,6 +33,26 @@ Flutter/client SDK:
 - published wishes;
 - wish reactions;
 - user wish requests.
+- balance and transaction history;
+- promo code application;
+- request package listing and purchase;
+- T-Bank top-up and package payment flows;
+- subscription settings and subscription payment flows;
+- AI request prepare/charge billing.
+
+Known production app IDs:
+
+```text
+psychology
+med_app
+gdz
+callories
+```
+
+Every app that uses the SDK must also exist in the admin app registry with the
+same `appId`. The SDK sends `appId` in `X-App-Id`, request body, and query
+parameters where needed; the admin registry is what makes that `appId`
+configurable in the admin UI.
 
 TypeScript/admin SDK:
 
@@ -139,6 +163,101 @@ Delete account:
 await sdk.deleteAccount(userId: userId);
 ```
 
+### Billing
+
+Balance and transaction history:
+
+```dart
+final history = await sdk.getBillingHistory(
+  userId: userId,
+  limit: 100,
+);
+
+final promo = await sdk.applyPromoCode(
+  userId: userId,
+  promoCode: 'START500',
+);
+```
+
+Request packages:
+
+```dart
+final packages = await sdk.listRequestPackages(scope: 'app');
+
+final purchase = await sdk.buyRequestPackageWithBalance(
+  userId: userId,
+  packageId: packages.first.id,
+);
+```
+
+T-Bank top-up:
+
+```dart
+final payment = await sdk.initTBankTopUp(
+  userId: userId,
+  amount: 500,
+  language: 'ru',
+);
+
+final result = await sdk.confirmTBankTopUp(
+  userId: userId,
+  paymentId: payment.paymentId,
+  orderId: payment.orderId,
+);
+```
+
+Request package by T-Bank:
+
+```dart
+final payment = await sdk.initTBankRequestPackage(
+  userId: userId,
+  packageId: packageId,
+  language: 'ru',
+);
+
+final result = await sdk.confirmTBankRequestPackage(
+  userId: userId,
+  paymentId: payment.paymentId,
+  orderId: payment.orderId,
+);
+```
+
+AI billing:
+
+```dart
+final preparation = await sdk.prepareAiRequest(userId: userId);
+
+// Run app-specific AI work here.
+
+final charge = await sdk.chargeAiRequest(
+  userId: userId,
+  requestPrice: preparation.requestPrice,
+  sessionStartedAt: preparation.sessionStartedAt,
+  sessionRequestIndex: preparation.sessionRequestIndex,
+);
+```
+
+Subscriptions, only for apps with subscriptions enabled:
+
+```dart
+final settings = await sdk.getSubscriptionSettings(scope: 'app');
+
+final payment = await sdk.initTBankSubscription(
+  userId: userId,
+  language: 'ru',
+  autoRenew: false,
+);
+
+final result = await sdk.confirmTBankSubscription(
+  userId: userId,
+  paymentId: payment.paymentId,
+  orderId: payment.orderId,
+);
+```
+
+Apps without subscriptions, for example `gdz` and `callories`, should not call
+subscription methods. Set `settings.hasSubscriptions=false` in the app registry.
+
 ### Profile
 
 ```dart
@@ -205,6 +324,8 @@ try {
   print(error.statusCode);
 }
 ```
+
+Payment screens should check `error.errorCode == 'INSUFFICIENT_BALANCE'`.
 
 ## TypeScript Admin Integration
 
@@ -445,12 +566,21 @@ Currently this aggregates app and user data client-side in the admin SDK.
   data, but auth/profile/version/wishes and shared billing catalog settings are
   now in `mainApi`.
 - Admin UI should call `mainSdk`, not the old psychology backend.
+- Agents integrating a new app should use `AGENT_INTEGRATION.md` as the source
+  of truth for the migration order and verification checklist.
 
-## Current Psychology App Values
+## Current App Values
 
 ```text
-appId: psychology
 mainApi: http://80.93.61.208:5195
-old psychology backend: http://80.93.61.208:5183
 new admin: http://80.93.61.208:5196
+
+psychology appId: psychology
+psychology old content backend: http://80.93.61.208:5183
+
+doctors appId: med_app
+doctors content backend: http://80.93.61.208:5193
+
+gdz appId: gdz
+callories appId: callories
 ```

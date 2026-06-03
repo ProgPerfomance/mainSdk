@@ -54,6 +54,19 @@ class Wish {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      if (requestId != null) 'requestId': requestId,
+      'text': text,
+      'likeCount': likeCount,
+      'dislikeCount': dislikeCount,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      if (userReaction != null) 'userReaction': userReaction!.apiValue,
+    };
+  }
+
   Wish copyWith({
     String? id,
     String? requestId,

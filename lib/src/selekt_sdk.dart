@@ -2,8 +2,14 @@ import 'package:dio/dio.dart';
 
 import 'models/auth_session.dart';
 import 'models/app_version_settings.dart';
+import 'models/ai_billing.dart';
+import 'models/billing_history.dart';
+import 'models/request_package.dart';
 import 'models/selekt_api_exception.dart';
 import 'models/selekt_user.dart';
+import 'models/subscription_settings.dart';
+import 'models/tbank_payment.dart';
+import 'models/transaction.dart';
 import 'models/wish.dart';
 import 'models/wish_request.dart';
 import 'selekt_sdk_config.dart';
@@ -135,6 +141,232 @@ class SelektSdk {
   Future<void> deleteAccount({required String userId}) async {
     await _post('/api/v1/auth/delete', {'userId': userId});
     await _sessionStore?.clearSession();
+  }
+
+  Future<({SelektTransaction transaction, double newBalance})> deposit({
+    required String userId,
+    required double amount,
+    String? description,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final data = await _post('/api/v1/billing/deposit', {
+      'userId': userId,
+      'amount': amount,
+      'description': ?description,
+      if (metadata != null && metadata.isNotEmpty) 'metadata': metadata,
+    });
+    final json = Map<String, dynamic>.from(data as Map);
+    return (
+      transaction: SelektTransaction.fromJson(
+        Map<String, dynamic>.from(json['transaction'] as Map),
+      ),
+      newBalance: (json['newBalance'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Future<AiRequestPreparation> prepareAiRequest({
+    required String userId,
+  }) async {
+    final data = await _post('/api/v1/billing/ai/prepare', {'userId': userId});
+    return AiRequestPreparation.fromJson(
+      Map<String, dynamic>.from(data as Map),
+    );
+  }
+
+  Future<AiRequestCharge> chargeAiRequest({
+    required String userId,
+    required double requestPrice,
+    required DateTime sessionStartedAt,
+    required int sessionRequestIndex,
+  }) async {
+    final data = await _post('/api/v1/billing/ai/charge', {
+      'userId': userId,
+      'requestPrice': requestPrice,
+      'sessionStartedAt': sessionStartedAt.toUtc().toIso8601String(),
+      'sessionRequestIndex': sessionRequestIndex,
+    });
+    return AiRequestCharge.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<BillingHistory> getBillingHistory({
+    required String userId,
+    int? limit,
+  }) async {
+    final data = await _post('/api/v1/billing/history', {
+      'userId': userId,
+      'limit': ?limit?.clamp(1, 200),
+    });
+    return BillingHistory.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<List<RequestPackage>> listRequestPackages({String? scope}) async {
+    final data = await _get(
+      '/api/v1/billing/request-packages',
+      queryParameters: {'scope': ?scope},
+    );
+    return List<Map<String, dynamic>>.from(
+      (data as List).map((item) => Map<String, dynamic>.from(item as Map)),
+    ).map(RequestPackage.fromJson).toList();
+  }
+
+  Future<SubscriptionSettings> getSubscriptionSettings({String? scope}) async {
+    final data = await _get(
+      '/api/v1/billing/subscription',
+      queryParameters: {'scope': ?scope},
+    );
+    return SubscriptionSettings.fromJson(
+      Map<String, dynamic>.from(data as Map),
+    );
+  }
+
+  Future<TBankPaymentInit> initTBankSubscription({
+    required String userId,
+    String? description,
+    String? language,
+    String? deviceOs,
+    String? deviceBrowser,
+    bool autoRenew = false,
+    String? scope,
+  }) async {
+    final data = await _post('/api/v1/billing/subscription/tbank/init', {
+      'userId': userId,
+      'description': ?description,
+      'language': ?language,
+      'deviceOs': ?deviceOs,
+      'deviceBrowser': ?deviceBrowser,
+      'autoRenew': autoRenew,
+      'scope': ?scope,
+    });
+    return TBankPaymentInit.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<TBankPaymentConfirm> confirmTBankSubscription({
+    required String userId,
+    String? paymentId,
+    String? orderId,
+  }) async {
+    final data = await _post('/api/v1/billing/subscription/tbank/confirm', {
+      'userId': userId,
+      'paymentId': ?paymentId,
+      'orderId': ?orderId,
+    });
+    return TBankPaymentConfirm.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<TBankPaymentConfirm> buySubscriptionWithBalance({
+    required String userId,
+    String? scope,
+  }) async {
+    final data = await _post('/api/v1/billing/subscription/buy-balance', {
+      'userId': userId,
+      'scope': ?scope,
+    });
+    return TBankPaymentConfirm.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<SelektUser> cancelSubscriptionAutoRenew({
+    required String userId,
+    String? scope,
+  }) async {
+    final data = await _post('/api/v1/billing/subscription/auto-renew/cancel', {
+      'userId': userId,
+      'scope': ?scope,
+    });
+    return SelektUser.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<RequestPackagePurchase> buyRequestPackageWithBalance({
+    required String userId,
+    required String packageId,
+  }) async {
+    final data = await _post('/api/v1/billing/request-packages/buy-balance', {
+      'userId': userId,
+      'packageId': packageId,
+    });
+    return RequestPackagePurchase.fromJson(
+      Map<String, dynamic>.from(data as Map),
+    );
+  }
+
+  Future<TBankPaymentInit> initTBankTopUp({
+    required String userId,
+    required double amount,
+    String? description,
+    String? language,
+    String? deviceOs,
+    String? deviceBrowser,
+  }) async {
+    final data = await _post('/api/v1/billing/tbank/init', {
+      'userId': userId,
+      'amount': amount,
+      'description': ?description,
+      'language': ?language,
+      'deviceOs': ?deviceOs,
+      'deviceBrowser': ?deviceBrowser,
+    });
+    return TBankPaymentInit.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<TBankPaymentInit> initTBankRequestPackage({
+    required String userId,
+    required String packageId,
+    String? description,
+    String? language,
+    String? deviceOs,
+    String? deviceBrowser,
+  }) async {
+    final data = await _post('/api/v1/billing/request-packages/tbank/init', {
+      'userId': userId,
+      'packageId': packageId,
+      'description': ?description,
+      'language': ?language,
+      'deviceOs': ?deviceOs,
+      'deviceBrowser': ?deviceBrowser,
+    });
+    return TBankPaymentInit.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<TBankPaymentConfirm> confirmTBankRequestPackage({
+    required String userId,
+    String? paymentId,
+    String? orderId,
+  }) async {
+    final data = await _post('/api/v1/billing/request-packages/tbank/confirm', {
+      'userId': userId,
+      'paymentId': ?paymentId,
+      'orderId': ?orderId,
+    });
+    return TBankPaymentConfirm.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<TBankPaymentConfirm> confirmTBankTopUp({
+    required String userId,
+    String? paymentId,
+    String? orderId,
+  }) async {
+    final data = await _post('/api/v1/billing/tbank/confirm', {
+      'userId': userId,
+      'paymentId': ?paymentId,
+      'orderId': ?orderId,
+    });
+    return TBankPaymentConfirm.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<({SelektTransaction transaction, double newBalance})> applyPromoCode({
+    required String userId,
+    required String promoCode,
+  }) async {
+    final data = await _post('/api/v1/billing/promo/apply', {
+      'userId': userId,
+      'promoCode': promoCode,
+    });
+    final json = Map<String, dynamic>.from(data as Map);
+    return (
+      transaction: SelektTransaction.fromJson(
+        Map<String, dynamic>.from(json['transaction'] as Map),
+      ),
+      newBalance: (json['newBalance'] as num?)?.toDouble() ?? 0,
+    );
   }
 
   Future<AppVersionSettings> getAppVersionSettings() async {

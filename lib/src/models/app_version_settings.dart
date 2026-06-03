@@ -13,4 +13,11 @@ class AppVersionSettings {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'requiredVersion': requiredVersion,
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 }
