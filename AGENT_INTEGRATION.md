@@ -179,6 +179,8 @@ for (final block in relatedApps.blocks) {
 
 Do not hardcode colors/layout inside SDK integration code. The SDK returns
 data and `block.type`; the app owns the visual implementation.
+When opening an app from the block, prefer `app.ruStoreUrl`; use `apiBaseUrl`
+only as a temporary fallback.
 
 Wishes:
 

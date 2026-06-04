@@ -25,6 +25,7 @@ class RelatedApp {
     this.displayName,
     this.shortDescription,
     this.imageUrl,
+    this.ruStoreUrl,
     this.platform,
     this.apiBaseUrl,
   });
@@ -35,6 +36,7 @@ class RelatedApp {
   final String? displayName;
   final String? shortDescription;
   final String? imageUrl;
+  final String? ruStoreUrl;
   final String? platform;
   final String? apiBaseUrl;
 
@@ -48,6 +50,7 @@ class RelatedApp {
       displayName: displayName,
       shortDescription: json['shortDescription']?.toString(),
       imageUrl: json['imageUrl']?.toString(),
+      ruStoreUrl: json['ruStoreUrl']?.toString(),
       platform: json['platform']?.toString(),
       apiBaseUrl: json['apiBaseUrl']?.toString(),
     );
@@ -62,6 +65,7 @@ class RelatedApp {
       if (displayName != null) 'displayName': displayName,
       if (shortDescription != null) 'shortDescription': shortDescription,
       if (imageUrl != null) 'imageUrl': imageUrl,
+      if (ruStoreUrl != null) 'ruStoreUrl': ruStoreUrl,
       if (platform != null) 'platform': platform,
       if (apiBaseUrl != null) 'apiBaseUrl': apiBaseUrl,
     };

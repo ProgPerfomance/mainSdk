@@ -305,6 +305,10 @@ for (final block in feed.blocks) {
 The SDK returns data only. Each app should render the banner/grid using its own
 colors, typography, radii, spacing, and navigation patterns.
 
+For app opening, prefer `RelatedApp.ruStoreUrl` when it is configured in the
+admin app registry. `apiBaseUrl` is backend metadata and should only be used as
+a temporary fallback.
+
 ### Wishes
 
 List published wishes:

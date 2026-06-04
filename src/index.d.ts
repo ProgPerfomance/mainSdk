@@ -14,6 +14,7 @@ export type MainApp = {
   displayName?: string | null;
   imageUrl?: string | null;
   shortDescription?: string | null;
+  ruStoreUrl?: string | null;
   platform: string;
   apiBaseUrl?: string | null;
   settings?: Record<string, unknown>;
@@ -181,6 +182,7 @@ export type CreateMainAppInput = {
   displayName?: string;
   imageUrl?: string;
   shortDescription?: string;
+  ruStoreUrl?: string;
   platform: string;
   apiBaseUrl?: string;
   settings?: Record<string, unknown>;
