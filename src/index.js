@@ -31,6 +31,30 @@ export class MainAdminSdk {
     });
   }
 
+  listRelatedAppBlocks() {
+    return this.request("/admin/api/related-app-blocks");
+  }
+
+  createRelatedAppBlock(input) {
+    return this.request("/admin/api/related-app-blocks", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateRelatedAppBlock(blockId, input) {
+    return this.request(`/admin/api/related-app-blocks/${encodeURIComponent(blockId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  }
+
+  deleteRelatedAppBlock(blockId) {
+    return this.request(`/admin/api/related-app-blocks/${encodeURIComponent(blockId)}`, {
+      method: "DELETE",
+    });
+  }
+
   updateAppTBankSettings(appId, input) {
     return this.request(`/admin/api/apps/${encodeURIComponent(appId)}/tbank`, {
       method: "PUT",

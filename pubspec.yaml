@@ -8,6 +8,9 @@ environment:
 
 dependencies:
   dio: ^5.4.0
+  flutter:
+    sdk: flutter
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   lints: ^6.0.0

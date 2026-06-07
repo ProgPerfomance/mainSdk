@@ -17,8 +17,22 @@ export type MainApp = {
   ruStoreUrl?: string | null;
   platform: string;
   apiBaseUrl?: string | null;
+  relatedBlockIds?: string[];
   settings?: Record<string, unknown>;
   tBankSettings?: MainTBankSettingsStatus;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type MainRelatedAppBlock = {
+  _id?: string;
+  id: string;
+  blockId: string;
+  type: "grid" | "banner";
+  title?: string | null;
+  columns: number;
+  appIds: string[];
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -185,6 +199,7 @@ export type CreateMainAppInput = {
   ruStoreUrl?: string;
   platform: string;
   apiBaseUrl?: string;
+  relatedBlockIds?: string[];
   settings?: Record<string, unknown>;
 };
 
@@ -252,6 +267,18 @@ export type CreateMainRequestPackageInput = {
 export type UpdateMainRequestPackageInput =
   Partial<CreateMainRequestPackageInput>;
 
+export type CreateMainRelatedAppBlockInput = {
+  blockId: string;
+  type: "grid" | "banner";
+  title?: string | null;
+  columns?: number;
+  appIds: string[];
+  isActive?: boolean;
+};
+
+export type UpdateMainRelatedAppBlockInput =
+  Partial<CreateMainRelatedAppBlockInput>;
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -280,6 +307,17 @@ export declare class MainAdminSdk {
   listApps(): Promise<MainApp[]>;
   createApp(input: CreateMainAppInput): Promise<MainApp>;
   updateApp(appId: string, input: UpdateMainAppInput): Promise<MainApp>;
+  listRelatedAppBlocks(): Promise<MainRelatedAppBlock[]>;
+  createRelatedAppBlock(
+    input: CreateMainRelatedAppBlockInput,
+  ): Promise<MainRelatedAppBlock>;
+  updateRelatedAppBlock(
+    blockId: string,
+    input: UpdateMainRelatedAppBlockInput,
+  ): Promise<MainRelatedAppBlock>;
+  deleteRelatedAppBlock(
+    blockId: string,
+  ): Promise<{ deleted: true; blockId: string }>;
   updateAppTBankSettings(
     appId: string,
     input: UpdateMainTBankSettingsInput,

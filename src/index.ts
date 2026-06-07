@@ -17,8 +17,22 @@ export type MainApp = {
   ruStoreUrl?: string | null;
   platform: string;
   apiBaseUrl?: string | null;
+  relatedBlockIds?: string[];
   settings?: Record<string, unknown>;
   tBankSettings?: MainTBankSettingsStatus;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type MainRelatedAppBlock = {
+  _id?: string;
+  id: string;
+  blockId: string;
+  type: "grid" | "banner";
+  title?: string | null;
+  columns: number;
+  appIds: string[];
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -185,6 +199,7 @@ export type CreateMainAppInput = {
   ruStoreUrl?: string;
   platform: string;
   apiBaseUrl?: string;
+  relatedBlockIds?: string[];
   settings?: Record<string, unknown>;
 };
 
@@ -252,6 +267,18 @@ export type CreateMainRequestPackageInput = {
 export type UpdateMainRequestPackageInput =
   Partial<CreateMainRequestPackageInput>;
 
+export type CreateMainRelatedAppBlockInput = {
+  blockId: string;
+  type: "grid" | "banner";
+  title?: string | null;
+  columns?: number;
+  appIds: string[];
+  isActive?: boolean;
+};
+
+export type UpdateMainRelatedAppBlockInput =
+  Partial<CreateMainRelatedAppBlockInput>;
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -307,6 +334,34 @@ export class MainAdminSdk {
       method: "PUT",
       body: JSON.stringify(input),
     });
+  }
+
+  listRelatedAppBlocks() {
+    return this.request<MainRelatedAppBlock[]>("/admin/api/related-app-blocks");
+  }
+
+  createRelatedAppBlock(input: CreateMainRelatedAppBlockInput) {
+    return this.request<MainRelatedAppBlock>("/admin/api/related-app-blocks", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateRelatedAppBlock(blockId: string, input: UpdateMainRelatedAppBlockInput) {
+    return this.request<MainRelatedAppBlock>(
+      `/admin/api/related-app-blocks/${encodeURIComponent(blockId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteRelatedAppBlock(blockId: string) {
+    return this.request<{ deleted: true; blockId: string }>(
+      `/admin/api/related-app-blocks/${encodeURIComponent(blockId)}`,
+      { method: "DELETE" },
+    );
   }
 
   updateAppTBankSettings(appId: string, input: UpdateMainTBankSettingsInput) {

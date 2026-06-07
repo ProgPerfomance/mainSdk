@@ -15,3 +15,4 @@ export 'src/models/tbank_payment.dart';
 export 'src/models/transaction.dart';
 export 'src/models/wish.dart';
 export 'src/models/wish_request.dart';
+export 'src/widgets/related_apps_section.dart';

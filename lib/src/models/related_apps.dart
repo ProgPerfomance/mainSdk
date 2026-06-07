@@ -76,10 +76,14 @@ class RelatedAppsBlock {
   const RelatedAppsBlock({
     required this.type,
     required this.apps,
+    this.id,
+    this.blockId,
     this.title,
     this.columns = 3,
   });
 
+  final String? id;
+  final String? blockId;
   final RelatedAppsBlockType type;
   final List<RelatedApp> apps;
   final String? title;
@@ -99,6 +103,8 @@ class RelatedAppsBlock {
         : <RelatedApp>[];
     return RelatedAppsBlock(
       type: RelatedAppsBlockType.fromJson(json['type']),
+      id: json['id']?.toString(),
+      blockId: json['blockId']?.toString(),
       title: json['title']?.toString(),
       columns: (json['columns'] as num?)?.toInt() ?? 3,
       apps: apps,
@@ -108,6 +114,8 @@ class RelatedAppsBlock {
   Map<String, dynamic> toJson() {
     return {
       'type': type.apiValue,
+      if (id != null) 'id': id,
+      if (blockId != null) 'blockId': blockId,
       if (title != null) 'title': title,
       'columns': columns,
       'apps': apps.map((app) => app.toJson()).toList(),
