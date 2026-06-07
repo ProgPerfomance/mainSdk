@@ -5,6 +5,7 @@ import 'models/app_version_settings.dart';
 import 'models/ai_billing.dart';
 import 'models/billing_history.dart';
 import 'models/related_apps.dart';
+import 'models/referral_summary.dart';
 import 'models/request_package.dart';
 import 'models/selekt_api_exception.dart';
 import 'models/selekt_user.dart';
@@ -137,6 +138,11 @@ class SelektSdk {
       'appliedReferralCode': referralCode,
     });
     return SelektUser.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<ReferralSummary> getReferrals({required String userId}) async {
+    final data = await _post('/api/v1/auth/referrals', {'userId': userId});
+    return ReferralSummary.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
   Future<void> deleteAccount({required String userId}) async {

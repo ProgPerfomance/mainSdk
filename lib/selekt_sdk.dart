@@ -6,6 +6,7 @@ export 'src/models/app_version_settings.dart';
 export 'src/models/ai_billing.dart';
 export 'src/models/billing_history.dart';
 export 'src/models/related_apps.dart';
+export 'src/models/referral_summary.dart';
 export 'src/models/selekt_user.dart';
 export 'src/models/selekt_api_exception.dart';
 export 'src/models/request_package.dart';
