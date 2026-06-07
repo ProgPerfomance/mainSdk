@@ -38,6 +38,42 @@ export type MainRelatedAppBlock = {
   updatedAt?: string | null;
 };
 
+export type MainCustomContentCollection = {
+  _id?: string;
+  appId: string;
+  app_id?: string;
+  collectionKey: string;
+  key?: string;
+  name: string;
+  description?: string | null;
+  schema: Record<string, unknown>;
+  settings: Record<string, unknown>;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type MainCustomContentItem = {
+  _id?: string;
+  appId: string;
+  app_id?: string;
+  collectionKey: string;
+  collection_key?: string;
+  itemId: string;
+  slug?: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
+  data: Record<string, unknown>;
+  tags: string[];
+  sortOrder: number;
+  sort_order?: number;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type MainTBankSettingsStatus = {
   enabled: boolean;
   terminalKeyConfigured: boolean;
@@ -279,6 +315,46 @@ export type CreateMainRelatedAppBlockInput = {
 export type UpdateMainRelatedAppBlockInput =
   Partial<CreateMainRelatedAppBlockInput>;
 
+export type CreateMainCustomContentCollectionInput = {
+  appId: string;
+  collectionKey: string;
+  name: string;
+  description?: string | null;
+  schema?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+  isActive?: boolean;
+};
+
+export type UpdateMainCustomContentCollectionInput =
+  Partial<Omit<CreateMainCustomContentCollectionInput, "appId" | "collectionKey">> & {
+    appId: string;
+  };
+
+export type CreateMainCustomContentItemInput = {
+  appId: string;
+  itemId: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  data?: Record<string, unknown>;
+  tags?: string[];
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type UpdateMainCustomContentItemInput =
+  Partial<Omit<CreateMainCustomContentItemInput, "appId" | "itemId">> & {
+    appId: string;
+  };
+
+export type MainCustomContentListOptions = {
+  appId?: string;
+  q?: string;
+  tags?: string[];
+  limit?: number;
+  skip?: number;
+};
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -360,6 +436,90 @@ export class MainAdminSdk {
   deleteRelatedAppBlock(blockId: string) {
     return this.request<{ deleted: true; blockId: string }>(
       `/admin/api/related-app-blocks/${encodeURIComponent(blockId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listCustomContentCollections(appId: string) {
+    return this.request<MainCustomContentCollection[]>(
+      `/admin/api/content/collections?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  createCustomContentCollection(input: CreateMainCustomContentCollectionInput) {
+    return this.request<MainCustomContentCollection>("/admin/api/content/collections", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCustomContentCollection(
+    collectionKey: string,
+    input: UpdateMainCustomContentCollectionInput,
+  ) {
+    return this.request<MainCustomContentCollection>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteCustomContentCollection(appId: string, collectionKey: string, deleteItems = false) {
+    return this.request<{ deleted: true; collectionKey: string }>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}?appId=${encodeURIComponent(appId)}&deleteItems=${deleteItems ? "true" : "false"}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listCustomContentItems(
+    appId: string,
+    collectionKey: string,
+    options: Omit<MainCustomContentListOptions, "appId"> = {},
+  ) {
+    const search = this.queryString({
+      appId,
+      q: options.q,
+      tags: options.tags?.join(","),
+      limit: options.limit,
+      skip: options.skip,
+    });
+    return this.request<MainCustomContentItem[]>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items${search}`,
+    );
+  }
+
+  createCustomContentItem(
+    collectionKey: string,
+    input: CreateMainCustomContentItemInput,
+  ) {
+    return this.request<MainCustomContentItem>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  updateCustomContentItem(
+    collectionKey: string,
+    itemId: string,
+    input: UpdateMainCustomContentItemInput,
+  ) {
+    return this.request<MainCustomContentItem>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items/${encodeURIComponent(itemId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteCustomContentItem(appId: string, collectionKey: string, itemId: string) {
+    return this.request<{ deleted: true; itemId: string }>(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items/${encodeURIComponent(itemId)}?appId=${encodeURIComponent(appId)}`,
       { method: "DELETE" },
     );
   }
@@ -596,6 +756,42 @@ export class MainAdminSdk {
         0,
       ),
     };
+  }
+
+  listPublicContentCollections(appId: string) {
+    return this.request<MainCustomContentCollection[]>(
+      `/api/v1/content/collections?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  listPublicContentItems(collectionKey: string, options: MainCustomContentListOptions = {}) {
+    const search = this.queryString({
+      appId: options.appId,
+      q: options.q,
+      tags: options.tags?.join(","),
+      limit: options.limit,
+      skip: options.skip,
+    });
+    return this.request<MainCustomContentItem[]>(
+      `/api/v1/content/${encodeURIComponent(collectionKey)}${search}`,
+    );
+  }
+
+  getPublicContentItem(collectionKey: string, itemId: string, appId?: string) {
+    const search = this.queryString({ appId });
+    return this.request<MainCustomContentItem>(
+      `/api/v1/content/${encodeURIComponent(collectionKey)}/${encodeURIComponent(itemId)}${search}`,
+    );
+  }
+
+  private queryString(params: Record<string, unknown>) {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null || value === "") continue;
+      search.set(key, String(value));
+    }
+    const value = search.toString();
+    return value ? `?${value}` : "";
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

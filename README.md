@@ -32,6 +32,7 @@ Flutter/client SDK:
 - account deletion;
 - app version settings;
 - related apps blocks for cross-app promotion;
+- custom content collections and items for app-specific entities;
 - published wishes;
 - wish reactions;
 - user wish requests.
@@ -68,6 +69,7 @@ TypeScript/admin SDK:
 - request packages CRUD;
 - promo codes CRUD;
 - app version read/update;
+- custom content collections/items CRUD;
 - wishes CRUD;
 - wish requests list/delete/clear;
 - analytics aggregation for the admin UI.
@@ -75,6 +77,16 @@ TypeScript/admin SDK:
 ## Flutter Integration
 
 Add the SDK as a dependency.
+
+For production apps and standalone repositories:
+
+```yaml
+dependencies:
+  main_sdk:
+    git:
+      url: ssh://git@ssh.github.com:443/Niami-apps/niami-modules.git
+      ref: main
+```
 
 For local development inside the current workspace:
 
@@ -307,12 +319,117 @@ for (final block in feed.blocks) {
 }
 ```
 
-The SDK returns data only. Each app should render the banner/grid using its own
-colors, typography, radii, spacing, and navigation patterns.
+Apps can either use the shared Flutter widget or render the data themselves.
+
+```dart
+RelatedAppsSection(sdk: sdk)
+```
+
+If an app renders manually, it should use its own colors, typography, radii,
+spacing, and navigation patterns.
 
 For app opening, prefer `RelatedApp.ruStoreUrl` when it is configured in the
 admin app registry. `apiBaseUrl` is backend metadata and should only be used as
 a temporary fallback.
+
+### Custom Content
+
+Custom content is the escape hatch for app-specific entities: psychologists,
+doctors, horoscope categories, food plans, lessons, quests, onboarding cards,
+or any other structure that should be managed in the shared admin but should
+not become a hardcoded SDK model.
+
+The SDK deliberately does not know what a doctor or psychologist is. It knows
+only:
+
+- `collectionKey`: a logical collection, for example `doctors` or
+  `psychologists`;
+- `itemId`: stable item id inside that collection;
+- common display fields: `title`, `description`, `imageUrl`, `tags`,
+  `sortOrder`, `isActive`;
+- `data`: arbitrary JSON object for the app-specific payload;
+- optional collection `schema` and `settings` objects for admin and agent
+  documentation.
+
+Backend shape:
+
+```json
+{
+  "itemId": "doctor_anna",
+  "title": "Анна Смирнова",
+  "description": "Терапевт, онлайн-консультации",
+  "imageUrl": "https://...",
+  "tags": ["therapy", "online"],
+  "sortOrder": 10,
+  "data": {
+    "experienceYears": 8,
+    "specializations": ["anxiety", "relationships"],
+    "price": 500,
+    "languages": ["ru"]
+  }
+}
+```
+
+Flutter usage:
+
+```dart
+final doctors = await sdk.listContentItems(collectionKey: 'doctors');
+
+final doctor = Doctor.fromContent(doctors.first);
+
+class Doctor {
+  Doctor({
+    required this.id,
+    required this.name,
+    required this.price,
+  });
+
+  final String id;
+  final String name;
+  final int price;
+
+  factory Doctor.fromContent(CustomContentItem item) {
+    return Doctor(
+      id: item.itemId,
+      name: item.title,
+      price: (item.data['price'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+```
+
+Filtering:
+
+```dart
+final onlineDoctors = await sdk.listContentItems(
+  collectionKey: 'doctors',
+  tags: ['online'],
+  q: 'анна',
+  limit: 50,
+);
+```
+
+Single item:
+
+```dart
+final item = await sdk.getContentItem(
+  collectionKey: 'doctors',
+  itemId: 'doctor_anna',
+);
+```
+
+Admin usage:
+
+- create a collection in the app page, for example `doctors`;
+- describe fields in `schema` as JSON so future agents know the expected
+  `data` shape;
+- create items with stable `itemId`;
+- put any app-specific object into `data`;
+- keep app-side typed adapters in the app code, not in the SDK.
+
+Rule for future apps: if a feature is app-specific content, use custom content
+first. Add a hardcoded SDK model only when the same exact entity and behavior is
+shared by many apps.
 
 ### Wishes
 

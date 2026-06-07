@@ -132,6 +132,9 @@ Replace local or app-specific calls for:
 - `POST /api/v1/auth/password-reset/request`
 - `POST /api/v1/auth/password-reset/confirm`
 - `GET /api/v1/app/version`
+- `GET /api/v1/content/collections`
+- `GET /api/v1/content/<collectionKey>`
+- `GET /api/v1/content/<collectionKey>/<itemId>`
 - `GET /api/v1/wishes`
 - `POST /api/v1/wishes/<id>/reaction`
 - `POST /api/v1/wishes/requests`
@@ -182,6 +185,39 @@ Do not hardcode colors/layout inside SDK integration code. The SDK returns
 data and `block.type`; the app owns the visual implementation.
 When opening an app from the block, prefer `app.ruStoreUrl`; use `apiBaseUrl`
 only as a temporary fallback.
+
+Custom content:
+
+```dart
+final collections = await sdk.listContentCollections();
+final doctors = await sdk.listContentItems(collectionKey: 'doctors');
+final doctor = await sdk.getContentItem(
+  collectionKey: 'doctors',
+  itemId: 'doctor_anna',
+);
+```
+
+Use this for app-specific entities of any shape: doctors, psychologists,
+categories, lessons, cards, plans, etc. The SDK provides `CustomContentItem`
+with common display fields and arbitrary `data`. Keep typed app models in the
+app:
+
+```dart
+class Doctor {
+  Doctor.fromContent(CustomContentItem item)
+      : id = item.itemId,
+        name = item.title,
+        price = (item.data['price'] as num?)?.toInt() ?? 0;
+
+  final String id;
+  final String name;
+  final int price;
+}
+```
+
+Do not add a new SDK model for every app-specific entity. Add a custom content
+collection in the admin, document its `data` shape in collection `schema`, then
+map it inside the app.
 
 Wishes:
 

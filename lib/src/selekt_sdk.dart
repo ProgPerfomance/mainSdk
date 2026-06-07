@@ -4,6 +4,7 @@ import 'models/auth_session.dart';
 import 'models/app_version_settings.dart';
 import 'models/ai_billing.dart';
 import 'models/billing_history.dart';
+import 'models/custom_content.dart';
 import 'models/related_apps.dart';
 import 'models/referral_summary.dart';
 import 'models/request_package.dart';
@@ -384,6 +385,44 @@ class SelektSdk {
   Future<RelatedAppsFeed> getRelatedApps() async {
     final data = await _get('/api/v1/app/other-apps');
     return RelatedAppsFeed.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<List<CustomContentCollection>> listContentCollections() async {
+    final data = await _get('/api/v1/content/collections');
+    return List<Map<String, dynamic>>.from(
+      (data as List).map((item) => Map<String, dynamic>.from(item as Map)),
+    ).map(CustomContentCollection.fromJson).toList();
+  }
+
+  Future<List<CustomContentItem>> listContentItems({
+    required String collectionKey,
+    String? q,
+    List<String> tags = const [],
+    int? limit,
+    int? skip,
+  }) async {
+    final data = await _get(
+      '/api/v1/content/${Uri.encodeComponent(collectionKey)}',
+      queryParameters: {
+        if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+        if (tags.isNotEmpty) 'tags': tags.join(','),
+        if (limit != null) 'limit': limit.clamp(1, 500),
+        if (skip != null) 'skip': skip < 0 ? 0 : skip,
+      },
+    );
+    return List<Map<String, dynamic>>.from(
+      (data as List).map((item) => Map<String, dynamic>.from(item as Map)),
+    ).map(CustomContentItem.fromJson).toList();
+  }
+
+  Future<CustomContentItem> getContentItem({
+    required String collectionKey,
+    required String itemId,
+  }) async {
+    final data = await _get(
+      '/api/v1/content/${Uri.encodeComponent(collectionKey)}/${Uri.encodeComponent(itemId)}',
+    );
+    return CustomContentItem.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
   Future<List<Wish>> listWishes() async {

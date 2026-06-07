@@ -55,6 +55,76 @@ export class MainAdminSdk {
     });
   }
 
+  listCustomContentCollections(appId) {
+    return this.request(
+      `/admin/api/content/collections?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  createCustomContentCollection(input) {
+    return this.request("/admin/api/content/collections", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  }
+
+  updateCustomContentCollection(collectionKey, input) {
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteCustomContentCollection(appId, collectionKey, deleteItems = false) {
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}?appId=${encodeURIComponent(appId)}&deleteItems=${deleteItems ? "true" : "false"}`,
+      { method: "DELETE" },
+    );
+  }
+
+  listCustomContentItems(appId, collectionKey, options = {}) {
+    const search = this.queryString({
+      appId,
+      q: options.q,
+      tags: options.tags?.join(","),
+      limit: options.limit,
+      skip: options.skip,
+    });
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items${search}`,
+    );
+  }
+
+  createCustomContentItem(collectionKey, input) {
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  updateCustomContentItem(collectionKey, itemId, input) {
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items/${encodeURIComponent(itemId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  deleteCustomContentItem(appId, collectionKey, itemId) {
+    return this.request(
+      `/admin/api/content/collections/${encodeURIComponent(collectionKey)}/items/${encodeURIComponent(itemId)}?appId=${encodeURIComponent(appId)}`,
+      { method: "DELETE" },
+    );
+  }
+
   updateAppTBankSettings(appId, input) {
     return this.request(`/admin/api/apps/${encodeURIComponent(appId)}/tbank`, {
       method: "PUT",
@@ -248,6 +318,40 @@ export class MainAdminSdk {
         0,
       ),
     };
+  }
+
+  listPublicContentCollections(appId) {
+    return this.request(
+      `/api/v1/content/collections?appId=${encodeURIComponent(appId)}`,
+    );
+  }
+
+  listPublicContentItems(collectionKey, options = {}) {
+    const search = this.queryString({
+      appId: options.appId,
+      q: options.q,
+      tags: options.tags?.join(","),
+      limit: options.limit,
+      skip: options.skip,
+    });
+    return this.request(`/api/v1/content/${encodeURIComponent(collectionKey)}${search}`);
+  }
+
+  getPublicContentItem(collectionKey, itemId, appId) {
+    const search = this.queryString({ appId });
+    return this.request(
+      `/api/v1/content/${encodeURIComponent(collectionKey)}/${encodeURIComponent(itemId)}${search}`,
+    );
+  }
+
+  queryString(params) {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null || value === "") continue;
+      search.set(key, String(value));
+    }
+    const value = search.toString();
+    return value ? `?${value}` : "";
   }
 
   async request(path, init = {}) {

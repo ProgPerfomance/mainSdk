@@ -5,6 +5,7 @@ export 'src/models/auth_session.dart';
 export 'src/models/app_version_settings.dart';
 export 'src/models/ai_billing.dart';
 export 'src/models/billing_history.dart';
+export 'src/models/custom_content.dart';
 export 'src/models/related_apps.dart';
 export 'src/models/referral_summary.dart';
 export 'src/models/selekt_user.dart';

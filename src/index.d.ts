@@ -38,6 +38,42 @@ export type MainRelatedAppBlock = {
   updatedAt?: string | null;
 };
 
+export type MainCustomContentCollection = {
+  _id?: string;
+  appId: string;
+  app_id?: string;
+  collectionKey: string;
+  key?: string;
+  name: string;
+  description?: string | null;
+  schema: Record<string, unknown>;
+  settings: Record<string, unknown>;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type MainCustomContentItem = {
+  _id?: string;
+  appId: string;
+  app_id?: string;
+  collectionKey: string;
+  collection_key?: string;
+  itemId: string;
+  slug?: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
+  data: Record<string, unknown>;
+  tags: string[];
+  sortOrder: number;
+  sort_order?: number;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type MainTBankSettingsStatus = {
   enabled: boolean;
   terminalKeyConfigured: boolean;
@@ -279,6 +315,46 @@ export type CreateMainRelatedAppBlockInput = {
 export type UpdateMainRelatedAppBlockInput =
   Partial<CreateMainRelatedAppBlockInput>;
 
+export type CreateMainCustomContentCollectionInput = {
+  appId: string;
+  collectionKey: string;
+  name: string;
+  description?: string | null;
+  schema?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+  isActive?: boolean;
+};
+
+export type UpdateMainCustomContentCollectionInput =
+  Partial<Omit<CreateMainCustomContentCollectionInput, "appId" | "collectionKey">> & {
+    appId: string;
+  };
+
+export type CreateMainCustomContentItemInput = {
+  appId: string;
+  itemId: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  data?: Record<string, unknown>;
+  tags?: string[];
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type UpdateMainCustomContentItemInput =
+  Partial<Omit<CreateMainCustomContentItemInput, "appId" | "itemId">> & {
+    appId: string;
+  };
+
+export type MainCustomContentListOptions = {
+  appId?: string;
+  q?: string;
+  tags?: string[];
+  limit?: number;
+  skip?: number;
+};
+
 export type CreateWishInput = {
   appId: string;
   text: string;
@@ -318,6 +394,38 @@ export declare class MainAdminSdk {
   deleteRelatedAppBlock(
     blockId: string,
   ): Promise<{ deleted: true; blockId: string }>;
+  listCustomContentCollections(appId: string): Promise<MainCustomContentCollection[]>;
+  createCustomContentCollection(
+    input: CreateMainCustomContentCollectionInput,
+  ): Promise<MainCustomContentCollection>;
+  updateCustomContentCollection(
+    collectionKey: string,
+    input: UpdateMainCustomContentCollectionInput,
+  ): Promise<MainCustomContentCollection>;
+  deleteCustomContentCollection(
+    appId: string,
+    collectionKey: string,
+    deleteItems?: boolean,
+  ): Promise<{ deleted: true; collectionKey: string }>;
+  listCustomContentItems(
+    appId: string,
+    collectionKey: string,
+    options?: Omit<MainCustomContentListOptions, "appId">,
+  ): Promise<MainCustomContentItem[]>;
+  createCustomContentItem(
+    collectionKey: string,
+    input: CreateMainCustomContentItemInput,
+  ): Promise<MainCustomContentItem>;
+  updateCustomContentItem(
+    collectionKey: string,
+    itemId: string,
+    input: UpdateMainCustomContentItemInput,
+  ): Promise<MainCustomContentItem>;
+  deleteCustomContentItem(
+    appId: string,
+    collectionKey: string,
+    itemId: string,
+  ): Promise<{ deleted: true; itemId: string }>;
   updateAppTBankSettings(
     appId: string,
     input: UpdateMainTBankSettingsInput,
@@ -388,4 +496,14 @@ export declare class MainAdminSdk {
   ): Promise<{ deleted: true; _id: string }>;
   clearWishRequests(appId: string): Promise<{ deleted: number }>;
   getAnalytics(): Promise<MainAnalytics>;
+  listPublicContentCollections(appId: string): Promise<MainCustomContentCollection[]>;
+  listPublicContentItems(
+    collectionKey: string,
+    options?: MainCustomContentListOptions,
+  ): Promise<MainCustomContentItem[]>;
+  getPublicContentItem(
+    collectionKey: string,
+    itemId: string,
+    appId?: string,
+  ): Promise<MainCustomContentItem>;
 }
