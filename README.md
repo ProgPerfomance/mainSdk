@@ -28,6 +28,7 @@ Flutter/client SDK:
 - password reset request and confirmation;
 - profile loading;
 - referral code application;
+- referral summary: users who activated the current user's code;
 - account deletion;
 - app version settings;
 - related apps blocks for cross-app promotion;
@@ -156,6 +157,10 @@ final updatedUser = await sdk.applyReferralCode(
   userId: userId,
   referralCode: referralCode,
 );
+
+final referralSummary = await sdk.getReferrals(userId: userId);
+final activatedCount = referralSummary.count;
+final activatedUsers = referralSummary.referrals;
 ```
 
 Delete account:

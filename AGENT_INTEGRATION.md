@@ -128,6 +128,7 @@ Replace local or app-specific calls for:
 - `POST /api/v1/auth/profile`
 - `POST /api/v1/auth/delete`
 - `POST /api/v1/auth/referral/apply`
+- `POST /api/v1/auth/referrals`
 - `POST /api/v1/auth/password-reset/request`
 - `POST /api/v1/auth/password-reset/confirm`
 - `GET /api/v1/app/version`
